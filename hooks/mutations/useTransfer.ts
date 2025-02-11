@@ -5,21 +5,23 @@ import { transferKeys } from "../queries/useTransfer";
 
 interface UseTransferMutationProps {
   onSuccess?: () => void;
+  onError?: (error: Error) => void;
 }
 
-export function useCreateTransferMutation({ onSuccess }: UseTransferMutationProps = {}) {
+export function useCreateTransferMutation({ 
+  onSuccess, 
+  onError 
+}: UseTransferMutationProps = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: createTransfer,
     onSuccess: (data) => {
-      // Update the cache with the new transfer
       queryClient.setQueryData(
         transferKeys.detail(data.payoutAccountId),
         data
       );
 
-      // Invalidate the transfers list
       queryClient.invalidateQueries({
         queryKey: transferKeys.all,
       });
@@ -28,6 +30,7 @@ export function useCreateTransferMutation({ onSuccess }: UseTransferMutationProp
     },
     onError: (error) => {
       console.error('Error creating transfer:', error);
+      onError?.(error instanceof Error ? error : new Error('Failed to create transfer'));
     },
   });
 }

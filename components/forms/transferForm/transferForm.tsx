@@ -17,6 +17,8 @@ import {
 	recipientTypeOpts,
 } from "./transferOptions";
 import { useAccount } from "@/hooks/queries/useAccount";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface TransferFormProps {
 	onSuccess?: () => void;
@@ -87,9 +89,21 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
 				e.stopPropagation();
 				form.handleSubmit();
 			}}
-			className="flex flex-col items-center justify-between p-6 bg-white rounded-lg shadow w-full"
+			className="flex flex-col items-center justify-between p-6 bg-white rounded-lg shadow w-full space-y-4"
 		>
-      <h2 className="text-xl font-semibold">Transfer information</h2>
+			{mutation.error && (
+				<Alert variant="destructive" className="mb-4">
+					<AlertCircle className="h-4 w-4" />
+					<AlertTitle>Error</AlertTitle>
+					<AlertDescription>
+						{mutation.error instanceof Error 
+							? mutation.error.message 
+							: 'An error occurred while creating the transfer'}
+					</AlertDescription>
+				</Alert>
+			)}
+
+			<h2 className="text-xl font-semibold">Transfer information</h2>
 			<form.Field name="payoutAccountId">
 				{(field) => {
 					return (
@@ -521,8 +535,17 @@ export default function TransferForm({ onSuccess }: TransferFormProps) {
 			<form.Subscribe>
 				{() => {
 					return (
-						<Button className="w-full" type="submit" disabled={mutation.isPending}>
-							{mutation.isPending ? "Creating..." : "Create transfer"}
+						<Button 
+							className="w-full" 
+							type="submit" 
+							disabled={mutation.isPending}
+							variant={mutation.error ? "destructive" : "default"}
+						>
+							{mutation.isPending 
+								? "Creating..." 
+								: mutation.error 
+									? "Try Again" 
+									: "Create transfer"}
 						</Button>
 					);
 				}}
